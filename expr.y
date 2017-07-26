@@ -2,11 +2,13 @@
 #include <stdio.h>
 
 int yylex();
+extern int yylineno;
 
 void yyerror(const char* msg) {
-  printf("%s\n",msg);
+  printf("Line %d: %s\n",yylineno,msg);
 }
 
+int variables[10];
 #define YYERROR_VERBOSE 1
 %}
 
@@ -15,14 +17,31 @@ void yyerror(const char* msg) {
 %token TK_EOF
 %token TK_EOL
 %token TK_ERROR
+%token TK_ID OP_ASSIGN KW_PRINT
 
 %%
-
-stmt: exprs
-    | exprs TK_EOL stmt
-    |
+input: stmts eols_op
 ;
-exprs : expr { printf("%d\n",$1); }
+eols_op: eols
+      |
+;
+eols: eols TK_EOL
+    | TK_EOL
+;
+stmts : stmts eols stmt
+      | stmt
+;
+stmt: print_st
+    | assign_st
+;
+
+print_st: KW_PRINT exprs { printf("%d\n",$2); }
+;
+
+assign_st: TK_ID OP_ASSIGN exprs { variables[$1] = $3; }
+;
+
+exprs : expr { $$ = $1; }
 
 
 expr: expr OP_ADD term { $$ = $1 + $3; }
@@ -37,4 +56,5 @@ term: term OP_MUL factor { $$ = $1 * $3; }
 
 factor: TK_NUMBER { $$ = $1; }
     | TK_LEFT_PAR expr TK_RIGHT_PAR { $$ = $2; }
+    | TK_ID { $$ = variables[$1];}
 ;
