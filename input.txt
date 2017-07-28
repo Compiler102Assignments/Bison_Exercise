@@ -1,4 +1,11 @@
+// comment 1
+/*
+  comentario de linea
+  $0 = 1
+  print $0
+*/
 print (10+5)
+// comment 2
 $0 = 10
 $5 = 10
 $0 = ($0 + $5) *3

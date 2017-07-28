@@ -20,7 +20,7 @@ int variables[10];
 %token TK_ID OP_ASSIGN KW_PRINT
 
 %%
-input: stmts eols_op
+input: eols_op stmts eols_op
 ;
 eols_op: eols
       |
