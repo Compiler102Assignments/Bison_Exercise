@@ -1,13 +1,18 @@
 %option noyywrap
 %option yylineno
 %x multiline_comment
+%x include_state
+%x include_filename_state
 %{
   #include <stdio.h>
   #include "token.h"
+  #include "string.h"
+
 %}
 
 %%
 [ \t]   { /*Nada*/ }
+"#include"  { BEGIN(include_state); }
 "/*"    { BEGIN(multiline_comment); }
 "//".*\n  { return TK_EOL; }
 "+"     { return OP_ADD; }
@@ -22,6 +27,11 @@
 "="     { return OP_ASSIGN; }
 "print" { return KW_PRINT; }
 .       { return TK_ERROR;}
+
+<include_state>[ \t]*\" { BEGIN(include_filename_state); }
+<include_filename_state>.*\"  { yytext[strlen(yytext)-1] = 0; printf("%s\n",yytext);
+
+}
 
 <multiline_comment>"*/" { BEGIN(INITIAL); }
 <multiline_comment>.|\n { /*nada*/ }
