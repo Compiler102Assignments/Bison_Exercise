@@ -925,8 +925,11 @@ YY_RULE_SETUP
 {
                           {
                             int c;
-                            while((c = input()) && c != '\n');
-                            yylineno++;
+                            if((c = input()) && c != '\"'){
+                              fprintf(stderr, "Line %d: Include statement not closed. Expected '\"'\n",yylineno);
+                              printf("c: %c. y yytext: %s\n ",c, yytext);
+                              yyterminate();
+                            }
                             if(push_file(yytext) != 0)
                               yyterminate();
                             BEGIN(INITIAL);
@@ -935,25 +938,25 @@ YY_RULE_SETUP
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 53 "expr.l"
+#line 57 "expr.l"
 { BEGIN(INITIAL); }
 	YY_BREAK
 case 19:
 /* rule 19 can match eol */
 YY_RULE_SETUP
-#line 54 "expr.l"
+#line 58 "expr.l"
 { /*nada*/ }
 	YY_BREAK
 case YY_STATE_EOF(multiline_comment):
-#line 55 "expr.l"
+#line 59 "expr.l"
 { printf("Line %d: Comment block not end\n",yylineno); return 0; }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 57 "expr.l"
+#line 61 "expr.l"
 ECHO;
 	YY_BREAK
-#line 957 "expr_lexer.c"
+#line 960 "expr_lexer.c"
 case YY_STATE_EOF(include_state):
 	yyterminate();
 
@@ -1968,7 +1971,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 57 "expr.l"
+#line 61 "expr.l"
 
 
 

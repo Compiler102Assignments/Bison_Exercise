@@ -9,6 +9,7 @@ print (10+5)
 #include "input2.txt"
 // comment 2
 $0 = 10
-$5 = 10
+$5 = 15
 $0 = ($0 + $5) *3
 print $0
+print $5

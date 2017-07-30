@@ -42,13 +42,17 @@
 <include_state>[^\"\n]+ {
                           {
                             int c;
-                            while((c = input()) && c != '\n');
-                            yylineno++;
+                            if((c = input()) && c != '\"'){
+                              fprintf(stderr, "Line %d: Include statement not closed. Expected '\"'\n",yylineno);
+                              printf("c: %c. y yytext: %s\n ",c, yytext);
+                              yyterminate();
+                            }
                             if(push_file(yytext) != 0)
                               yyterminate();
                             BEGIN(INITIAL);
                           }
                         }
+
 
 <multiline_comment>"*/" { BEGIN(INITIAL); }
 <multiline_comment>.|\n { /*nada*/ }
