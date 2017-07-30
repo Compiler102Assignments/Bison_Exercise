@@ -7,6 +7,7 @@
   #include <stdio.h>
   #include "token.h"
   #include "string.h"
+
   typedef struct include_stack {
     struct include_stack *prev;
     FILE* f;
@@ -38,6 +39,10 @@
 "$"[0-9]+    { yylval = yytext[1] - '0'; return TK_ID; }
 "="     { return OP_ASSIGN; }
 "print" { return KW_PRINT; }
+"HEX" { return KW_HEX; }
+"BIN" { return KW_BIN; }
+"DEC" { return KW_DEC; }
+"," { return OP_COMMA; }
 <INITIAL><<EOF>> { if(pop_file() != 0) yyterminate(); }
 .       { return TK_ERROR;}
 

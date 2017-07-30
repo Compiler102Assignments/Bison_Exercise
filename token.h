@@ -51,13 +51,17 @@ extern int yydebug;
     OP_DIV = 261,
     TK_LEFT_PAR = 262,
     TK_RIGHT_PAR = 263,
-    TK_NUMBER = 264,
-    TK_EOF = 265,
-    TK_EOL = 266,
-    TK_ERROR = 267,
-    TK_ID = 268,
-    OP_ASSIGN = 269,
-    KW_PRINT = 270
+    OP_COMMA = 264,
+    TK_NUMBER = 265,
+    TK_EOF = 266,
+    TK_EOL = 267,
+    TK_ERROR = 268,
+    TK_ID = 269,
+    OP_ASSIGN = 270,
+    KW_PRINT = 271,
+    KW_HEX = 272,
+    KW_BIN = 273,
+    KW_DEC = 274
   };
 #endif
 

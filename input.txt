@@ -5,11 +5,13 @@
   print $0
 */
 $3 = 100
-print (10+5)
+print (10+5+3)
 #include "input2.txt"
 // comment 2
 $0 = 10
 $5 = 15
-$0 = ($0 + $5) *3
-print $0
+$1 = ($0 + $5) *3
+print $0, DEC
+print $0, HEX
+print $0, BIN
 print $5

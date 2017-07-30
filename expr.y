@@ -1,6 +1,6 @@
 %{
 #include <stdio.h>
-
+#include "utils.c"
 int yylex();
 extern int yylineno;
 
@@ -9,15 +9,16 @@ void yyerror(const char* msg) {
 }
 
 int variables[10];
+int print_value;
 #define YYERROR_VERBOSE 1
 %}
 
-%token OP_ADD OP_SUB OP_MUL OP_DIV TK_LEFT_PAR TK_RIGHT_PAR
+%token OP_ADD OP_SUB OP_MUL OP_DIV TK_LEFT_PAR TK_RIGHT_PAR OP_COMMA
 %token TK_NUMBER
 %token TK_EOF
 %token TK_EOL
 %token TK_ERROR
-%token TK_ID OP_ASSIGN KW_PRINT
+%token TK_ID OP_ASSIGN KW_PRINT KW_HEX KW_BIN KW_DEC
 
 %%
 input: eols_op stmts eols_op
@@ -35,9 +36,17 @@ stmt: print_st
     | assign_st
 ;
 
-print_st: KW_PRINT exprs { printf("%d\n",$2); }
+print_st: KW_PRINT exprs { print_value= $2; } optional_option
 ;
 
+optional_option: OP_COMMA print_option
+               | { printf("%d\n", print_value); }
+;
+
+print_option: KW_DEC { printf("%d\n", print_value); }
+            | KW_HEX { printf("%x\n", print_value); }
+            | KW_BIN { print_int2bin(print_value); }
+;
 assign_st: TK_ID OP_ASSIGN exprs { variables[$1] = $3; }
 ;
 

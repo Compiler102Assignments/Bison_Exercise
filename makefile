@@ -10,7 +10,7 @@ $(TARGET): $(OBJ_FILES)
 expr_lexer.c: expr.l
 	flex -o $@ $^
 
-expr_parser.c: expr.y
+expr_parser.c: expr.y utils.c
 	bison --defines=token.h -o $@ $<
 
 %.o: %.c token.h
