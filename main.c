@@ -2,23 +2,15 @@
 int yylex();
 void yyparse();
 extern FILE* yyin;
-
+int push_file(char* filename);
 int main(int argc, char* argv[]){
-  if(argc < 2){
+  if(argc != 2){
     fprintf(stderr,"Usage: %s <input file>\n",argv[0]);
     return 1;
   }
-  int cont = 1;
-  while(argc>cont ){
-    yyin = fopen(argv[cont],"r");
-    if(yyin == NULL){
-      fprintf(stderr, "Cannot open file %s\n",argv[1] );
-      return 1;
-    }
-    yyparse();
-    fclose(yyin);
-    cont++;
-  }
+  if(push_file(argv[1]) !=0 )
+    return 1;
+  yyparse();
 }
 
 /*

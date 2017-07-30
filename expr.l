@@ -2,17 +2,27 @@
 %option yylineno
 %x multiline_comment
 %x include_state
-%x include_filename_state
 %{
   #include <stdio.h>
   #include "token.h"
   #include "string.h"
+  typedef struct include_stack {
+    struct include_stack *prev;
+    FILE* f;
+    int lineno;
+    char* filename;
+    YY_BUFFER_STATE bs;
+  } include_stack_t;
 
+  include_stack_t* inc_stack = NULL;
+  char* yyfilename;
+  int push_file(char* filename);
+  int pop_file();
 %}
 
 %%
 [ \t]   { /*Nada*/ }
-"#include"  { BEGIN(include_state); }
+^"#"[ \t]*"include"[ \t]\"  { BEGIN(include_state); /*^ obliga que la expression debe estar al inicio del file*/}
 "/*"    { BEGIN(multiline_comment); }
 "//".*\n  { return TK_EOL; }
 "+"     { return OP_ADD; }
@@ -26,15 +36,61 @@
 "$"[0-9]+    { yylval = yytext[1] - '0'; return TK_ID; }
 "="     { return OP_ASSIGN; }
 "print" { return KW_PRINT; }
+<INITIAL><<EOF>> { if(pop_file() != 0) yyterminate(); }
 .       { return TK_ERROR;}
 
-<include_state>[ \t]*\" { BEGIN(include_filename_state); }
-<include_filename_state>.*\"  { yytext[strlen(yytext)-1] = 0; printf("%s\n",yytext);
-
-}
+<include_state>[^\"\n]+ {
+                          {
+                            int c;
+                            while((c = input()) && c != '\n');
+                            yylineno++;
+                            if(push_file(yytext) != 0)
+                              yyterminate();
+                            BEGIN(INITIAL);
+                          }
+                        }
 
 <multiline_comment>"*/" { BEGIN(INITIAL); }
 <multiline_comment>.|\n { /*nada*/ }
 <multiline_comment><<EOF>>  { printf("Line %d: Comment block not end\n",yylineno); return 0; }
 
 %%
+
+int push_file(char* filename){
+  FILE* f = fopen(filename, "r");
+  if(f == NULL){
+    fprintf(stderr, "File %s not found.\n", filename);
+    return 1;
+  }
+  include_stack_t* is = malloc(sizeof(include_stack_t));
+  if(is == NULL){
+    fprintf(stderr, "Out of memory.\n");
+    return 1;
+  }
+  is->f = f;
+  is->lineno = yylineno;
+  is->filename = yyfilename;
+  is->bs = yy_create_buffer(f, YY_BUF_SIZE);
+  is->prev = inc_stack;
+  inc_stack = is;
+  yylineno = 1;
+  yyfilename = filename;
+  yy_switch_to_buffer(is->bs);
+  return 0;
+}
+
+int pop_file(){
+  include_stack_t* prev_is = inc_stack->prev;
+  fclose(inc_stack->f);
+  yy_delete_buffer(inc_stack->bs);
+  yylineno = inc_stack->lineno;
+  yyfilename = inc_stack->filename;
+
+  free(inc_stack);
+
+  if(prev_is == NULL) return 1;
+
+  yy_switch_to_buffer(prev_is->bs);
+  inc_stack = prev_is;
+  return 0;
+}
