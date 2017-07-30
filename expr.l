@@ -2,6 +2,7 @@
 %option yylineno
 %x multiline_comment
 %x include_state
+%x include_state_2
 %{
   #include <stdio.h>
   #include "token.h"
@@ -23,6 +24,7 @@
 %%
 [ \t]   { /*Nada*/ }
 ^"#"[ \t]*"include"[ \t]\"  { BEGIN(include_state); /*^ obliga que la expression debe estar al inicio del file*/}
+^"#"[ \t]*"include"[ \t]"<"  { BEGIN(include_state_2); }
 "/*"    { BEGIN(multiline_comment); }
 "//".*\n  { return TK_EOL; }
 "+"     { return OP_ADD; }
@@ -53,7 +55,19 @@
                           }
                         }
 
-
+<include_state_2>[^">"\n]+ {
+                          {
+                            int c;
+                            if((c = input()) && c != '>'){
+                              fprintf(stderr, "Line %d: Include statement not closed. Expected '>'\n",yylineno);
+                              printf("c: %c. y yytext: %s\n ",c, yytext);
+                              yyterminate();
+                            }
+                            if(push_file(yytext) != 0)
+                              yyterminate();
+                            BEGIN(INITIAL);
+                          }
+                        }
 <multiline_comment>"*/" { BEGIN(INITIAL); }
 <multiline_comment>.|\n { /*nada*/ }
 <multiline_comment><<EOF>>  { printf("Line %d: Comment block not end\n",yylineno); return 0; }
